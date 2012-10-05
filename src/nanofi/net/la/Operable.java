@@ -137,4 +137,9 @@ public class Operable {
   public TemporalVector sub(Double a, TemporalVector b) {
     return _subAssign(b, a);
   }
+  
+  // Transpose operations
+  
+  // Mul operations
+  // Div operations
 }
