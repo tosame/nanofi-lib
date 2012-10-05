@@ -7,7 +7,7 @@ public class Vector implements VectorBase, VectorWritable {
   public Vector(int size) {
     values = new double[size];
   }
-  public Vector(double[] values) {
+  public Vector(double... values) {
     this.values = Arrays.copyOf(values, values.length);
   }
   public <T extends VectorBase> Vector(T copy) {
@@ -27,5 +27,15 @@ public class Vector implements VectorBase, VectorWritable {
   @Override
   public double set(int index, double value) {
     return (values[index] = value);
+  }
+  
+  @Override
+  public String toString() {
+    StringBuffer buffer = new StringBuffer();
+    for(int i = 0; i < values.length; i++){
+      buffer.append(values[i]);
+      buffer.append(' ');
+    }
+    return buffer.toString();
   }
 }
