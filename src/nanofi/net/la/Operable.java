@@ -139,7 +139,28 @@ public class Operable {
   }
   
   // Transpose operations
+  public <A extends VectorBase> TransposeVector<A> t(A a){
+    return new TransposeVector<A>(a);
+  }
+  public <A extends VectorBase> A t(TransposeVector<A> a){
+    return a.base();
+  }
   
   // Mul operations
+  private <A extends VectorWritable, B extends VectorBase> A _mulAssign(A a, B b) {
+    final int length = a.size();
+    if (length != b.size()) throw new DimensionMismatchException();
+    for (int i = 0; i < length; i++) {
+      a.set(i, a.get(i) * b.get(i));
+    }
+    return a;
+  }
+  public <A extends VectorWritable, B extends VectorBase> A mulAssign(A a, B b) {
+    return _mulAssign(a, b);
+  }
+  public <A extends VectorBase, B extends VectorBase> TemporalVector mul(A a, B b){
+    TemporalVector result = new TemporalVector(a);
+    return mulAssign(result, b);
+  }
   // Div operations
 }
