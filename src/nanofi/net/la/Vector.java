@@ -4,20 +4,20 @@ import java.util.Arrays;
 
 public class Vector implements VectorBase, VectorWritable {
   protected final double[] values;
-  public Vector(int size) {
+  public Vector(final int size) {
     values = new double[size];
   }
-  public Vector(double... values) {
+  public Vector(final double... values) {
     this.values = Arrays.copyOf(values, values.length);
   }
-  public <T extends VectorBase> Vector(T copy) {
+  public <T extends VectorBase> Vector(final T copy) {
     values = new double[copy.size()];
     for(int i = 0; i < values.length; i++)
       values[i] = copy.get(i);
   }
 
   @Override
-  public double get(int index) {
+  public double get(final int index) {
     return values[index];
   }
   @Override
@@ -25,17 +25,12 @@ public class Vector implements VectorBase, VectorWritable {
     return values.length;
   }
   @Override
-  public double set(int index, double value) {
+  public double set(final int index, final double value) {
     return (values[index] = value);
   }
-  
+
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    for(int i = 0; i < values.length; i++){
-      buffer.append(values[i]);
-      buffer.append(' ');
-    }
-    return buffer.toString();
+    return Arrays.toString(values);
   }
 }

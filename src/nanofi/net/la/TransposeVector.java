@@ -1,17 +1,17 @@
 package nanofi.net.la;
 
-class TransposeVector<T extends VectorBase> implements VectorBase {
-  private T base;
-  public TransposeVector(T base) {
+final class TransposeVector<T extends VectorBase> implements VectorBase {
+  private final T base;
+  public TransposeVector(final T base) {
     this.base = base;
   }
-  
-  public T base(){
+
+  public T base() {
     return base;
   }
 
   @Override
-  public double get(int index) {
+  public double get(final int index) {
     return base.get(index);
   }
 

@@ -6,17 +6,22 @@ import java.util.Map.Entry;
  * Pair class has ability of hold two type values.
  * <p>
  * Make pair instance can from helper methods belows:
+ * 
  * <pre>
- * {@code
- * Pair<> pair = Pair.create(10, "Test"); // Return Pair<Integer, String> instance.
+ * {
+ *   &#064;code
+ *   Pair&lt;&gt; pair = Pair.create(10, &quot;Test&quot;); // Return Pair&lt;Integer, String&gt; instance.
  * }
- * </pre> 
+ * </pre>
+ * 
  * </p>
  * 
  * @author Kazuto Fukuchi
- *
- * @param <First> First value type
- * @param <Second> Second value type
+ * 
+ * @param <First>
+ *        First value type
+ * @param <Second>
+ *        Second value type
  */
 public class Pair<First, Second> implements Entry<First, Second> {
   /**
@@ -71,7 +76,7 @@ public class Pair<First, Second> implements Entry<First, Second> {
    *        First value.
    * @return First value. It's same as parameter value.
    */
-  public First first(First value) {
+  public First first(final First value) {
     return this.first = value;
   }
   /**
@@ -89,7 +94,7 @@ public class Pair<First, Second> implements Entry<First, Second> {
    *        Second value.
    * @return Second value. It's same as parameter value.
    */
-  public Second second(Second value) {
+  public Second second(final Second value) {
     return this.second = value;
   }
 

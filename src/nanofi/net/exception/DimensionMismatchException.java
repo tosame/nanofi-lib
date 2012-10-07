@@ -6,20 +6,20 @@ public class DimensionMismatchException extends RuntimeException {
    * Serial version UID
    */
   private static final long serialVersionUID = 2984504436127993181L;
-  
+
   public DimensionMismatchException() {
     super();
   }
 
-  public DimensionMismatchException(String message) {
+  public DimensionMismatchException(final String message) {
     super(message);
   }
 
-  public DimensionMismatchException(Throwable cause) {
+  public DimensionMismatchException(final Throwable cause) {
     super(cause);
   }
 
-  public DimensionMismatchException(String message, Throwable cause) {
+  public DimensionMismatchException(final String message, final Throwable cause) {
     super(message, cause);
   }
 }

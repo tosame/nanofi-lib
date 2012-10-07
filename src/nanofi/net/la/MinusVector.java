@@ -1,12 +1,12 @@
 package nanofi.net.la;
 
-class MinusVector<T extends VectorBase> implements VectorBase{
-  private T base;
-  public MinusVector(T base){
+final class MinusVector<T extends VectorBase> implements VectorBase {
+  private final T base;
+  public MinusVector(final T base) {
     this.base = base;
   }
   @Override
-  public double get(int index) {
+  public double get(final int index) {
     return -base.get(index);
   }
   @Override
