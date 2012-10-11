@@ -86,9 +86,83 @@ public class Operable {
 
   // End: Add operations for Vector + double
 
+  // Start: Add operations for Matrix + Matrix
+
+  private <A extends MatrixWritable, B extends MatrixBase> A _addAssign(final A a, final B b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    if (rows != b.rows() && columns != b.columns()) new DimensionMismatchException();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        a.set(i, j, a.get(i, j) + b.get(i, j));
+      }
+    }
+    return a;
+  }
+
+  public <A extends MatrixWritable, B extends MatrixBase> A addAssign(final A a, final B b) {
+    return _addAssign(a, b);
+  }
+
+  public <A extends MatrixBase, B extends MatrixBase> TemporalMatrix add(final A a, final B b) {
+    final TemporalMatrix result = new TemporalMatrix(a);
+    return addAssign(result, b);
+  }
+
+  public <B extends MatrixBase> TemporalMatrix add(final TemporalMatrix a, final B b) {
+    return addAssign(a, b);
+  }
+
+  public <A extends MatrixBase> TemporalMatrix add(final A a, final TemporalMatrix b) {
+    return addAssign(b, a);
+  }
+
+  public TemporalMatrix add(final TemporalMatrix a, final TemporalMatrix b) {
+    return addAssign(a, b);
+  }
+
+  // End: Add operations for Matrix + Matrix
+
+  // Start: Add operations for Matrix + double
+
+  public <A extends MatrixWritable> A addAssign(final A a, final double b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        a.set(i, j, a.get(i, j) + b);
+      }
+    }
+    return a;
+  }
+
+  public <A extends MatrixBase> TemporalMatrix add(final A a, final double b) {
+    final TemporalMatrix result = new TemporalMatrix(a);
+    return addAssign(result, b);
+  }
+
+  public <B extends MatrixBase> TemporalMatrix add(final double a, final B b) {
+    final TemporalMatrix result = new TemporalMatrix(b);
+    return addAssign(result, a);
+  }
+
+  public TemporalMatrix add(final TemporalMatrix a, final double b) {
+    return addAssign(a, b);
+  }
+
+  public TemporalMatrix add(final double a, final TemporalMatrix b) {
+    return addAssign(b, a);
+  }
+
+  // End: Add operations for Matrix + double
+
   // Minus unary operations
   public <A extends VectorBase> MinusVector<A> minus(final A a) {
     return new MinusVector<A>(a);
+  }
+
+  public <A extends MatrixBase> MinusMatrix<A> minus(final A a) {
+    return new MinusMatrix<A>(a);
   }
 
   // Sub operations
@@ -99,13 +173,22 @@ public class Operable {
     final int length = a.size();
     if (length != b.size()) throw new DimensionMismatchException();
     for (int i = 0; i < length; i++) {
-      a.set(i, b.get(i) - a.get(i));
+      a.set(i, a.get(i) - b.get(i));
     }
     return a;
   }
 
+  private <A extends VectorBase, B extends VectorWritable> B _subAssign(final A a, final B b) {
+    final int length = a.size();
+    if (length != b.size()) throw new DimensionMismatchException();
+    for (int i = 0; i < length; i++) {
+      b.set(i, b.get(i) - a.get(i));
+    }
+    return b;
+  }
+
   public <A extends VectorWritable, B extends VectorBase> A subAssign(final A a, final B b) {
-    return addAssign(a, minus(b));
+    return _subAssign(a, b);
   }
 
   public <A extends VectorBase, B extends VectorBase> TemporalVector sub(final A a, final B b) {
@@ -118,7 +201,7 @@ public class Operable {
   }
 
   public <A extends VectorBase> TemporalVector sub(final A a, final TemporalVector b) {
-    return _subAssign(b, a);
+    return _subAssign(a, b);
   }
 
   public TemporalVector sub(final TemporalVector a, final TemporalVector b) {
@@ -132,13 +215,21 @@ public class Operable {
   private <A extends VectorWritable> A _subAssign(final A a, final double b) {
     final int length = a.size();
     for (int i = 0; i < length; i++) {
-      a.set(i, b - a.get(i));
+      a.set(i, a.get(i) - b);
     }
     return a;
   }
 
+  private <B extends VectorWritable> B _subAssign(final double a, final B b) {
+    final int length = b.size();
+    for (int i = 0; i < length; i++) {
+      b.set(i, a - b.get(i));
+    }
+    return b;
+  }
+
   public <A extends VectorWritable> A subAssign(final A a, final double b) {
-    return addAssign(a, -b);
+    return _subAssign(a, b);
   }
 
   public <A extends VectorBase> TemporalVector sub(final A a, final double b) {
@@ -156,10 +247,107 @@ public class Operable {
   }
 
   public TemporalVector sub(final double a, final TemporalVector b) {
-    return _subAssign(b, a);
+    return _subAssign(a, b);
   }
 
   // End: Sub operations for Vector + double
+
+  // Start: Sub operations for Matrix + Matrix
+
+  private <A extends MatrixWritable, B extends MatrixBase> A _subAssign(final A a, final B b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    if (rows != b.rows() && columns != b.columns()) new DimensionMismatchException();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        a.set(i, j, a.get(i, j) - b.get(i, j));
+      }
+    }
+    return a;
+  }
+
+  private <A extends MatrixBase, B extends MatrixWritable> B _subAssign(final A a, final B b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    if (rows != b.rows() && columns != b.columns()) new DimensionMismatchException();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        b.set(i, j, b.get(i, j) - a.get(i, j));
+      }
+    }
+    return b;
+  }
+
+  public <A extends MatrixWritable, B extends MatrixBase> A subAssign(final A a, final B b) {
+    return _subAssign(a, b);
+  }
+
+  public <A extends MatrixBase, B extends MatrixBase> TemporalMatrix sub(final A a, final B b) {
+    final TemporalMatrix result = new TemporalMatrix(a);
+    return subAssign(result, b);
+  }
+
+  public <B extends MatrixBase> TemporalMatrix sub(final TemporalMatrix a, final B b) {
+    return subAssign(a, b);
+  }
+
+  public <A extends MatrixBase> TemporalMatrix sub(final A a, final TemporalMatrix b) {
+    return _subAssign(a, b);
+  }
+
+  public TemporalMatrix sub(final TemporalMatrix a, final TemporalMatrix b) {
+    return subAssign(a, b);
+  }
+
+  // End: Sub operations for Matrix + Matrix
+
+  // Start: Sub operations for Matrix + double
+
+  private <A extends MatrixWritable> A _subAssign(final A a, final double b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        a.set(i, j, a.get(i, j) - b);
+      }
+    }
+    return a;
+  }
+
+  private <B extends MatrixWritable> B _subAssign(final double a, final B b) {
+    final int rows = b.rows();
+    final int columns = b.columns();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        b.set(i, j, b.get(i, j) - a);
+      }
+    }
+    return b;
+  }
+
+  public <A extends MatrixWritable> A subAssign(final A a, final double b) {
+    return _subAssign(a, b);
+  }
+
+  public <A extends MatrixBase> TemporalMatrix sub(final A a, final double b) {
+    final TemporalMatrix result = new TemporalMatrix(a);
+    return subAssign(result, b);
+  }
+
+  public <B extends MatrixBase> TemporalMatrix sub(final double a, final B b) {
+    final TemporalMatrix result = new TemporalMatrix(b);
+    return _subAssign(result, a);
+  }
+
+  public TemporalMatrix sub(final TemporalMatrix a, final double b) {
+    return subAssign(a, b);
+  }
+
+  public TemporalMatrix sub(final double a, final TemporalMatrix b) {
+    return _subAssign(a, b);
+  }
+
+  // End: Sub operations for Matrix + double
 
   // Transpose operations
   public <A extends VectorBase> TransposeVector<A> t(final A a) {

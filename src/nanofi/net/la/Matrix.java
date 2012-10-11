@@ -30,8 +30,15 @@ public class Matrix implements MatrixBase, MatrixWritable {
       System.arraycopy(copy[i], 0, values[i], 0, columns);
     }
   }
-  public Matrix(final Matrix copy) {
-    this(copy.values);
+  public <T extends MatrixBase> Matrix(final T copy) {
+    rows = copy.rows();
+    columns = copy.columns();
+    values = new double[rows][columns];
+    for(int i = 0; i < rows; i++){
+      for(int j = 0; j < columns; j++){
+        values[i][j] = copy.get(i, j);
+      }
+    }
   }
 
   @Override
