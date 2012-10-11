@@ -21,20 +21,14 @@ public class Operable {
 
   // Basic arithmetic operation
   // Add operations
+
+  // Start: Add operations for Vector + Vector
+
   private <A extends VectorWritable, B extends VectorBase> A _addAssign(final A a, final B b) {
     final int length = a.size();
     if (length != b.size()) throw new DimensionMismatchException();
     for (int i = 0; i < length; i++) {
       a.set(i, a.get(i) + b.get(i));
-    }
-    return a;
-  }
-
-  private <A extends VectorWritable, B extends VectorBase> A _subAssign(final A a, final B b) {
-    final int length = a.size();
-    if (length != b.size()) throw new DimensionMismatchException();
-    for (int i = 0; i < length; i++) {
-      a.set(i, b.get(i) - a.get(i));
     }
     return a;
   }
@@ -55,6 +49,14 @@ public class Operable {
   public <A extends VectorBase> TemporalVector add(final A a, final TemporalVector b) {
     return addAssign(b, a);
   }
+
+  public TemporalVector add(final TemporalVector a, final TemporalVector b) {
+    return addAssign(a, b);
+  }
+
+  // End: Add operations for Vector + Vector
+
+  // Start: Add operations for Vector + double
 
   public <A extends VectorWritable> A addAssign(final A a, final double b) {
     final int length = a.size();
@@ -82,9 +84,7 @@ public class Operable {
     return addAssign(b, a);
   }
 
-  public TemporalVector add(final TemporalVector a, final TemporalVector b) {
-    return addAssign(a, b);
-  }
+  // End: Add operations for Vector + double
 
   // Minus unary operations
   public <A extends VectorBase> MinusVector<A> minus(final A a) {
@@ -92,10 +92,14 @@ public class Operable {
   }
 
   // Sub operations
-  private <A extends VectorWritable> A _subAssign(final A a, final double b) {
+
+  // Start: Sub operations for Vector + Vector
+
+  private <A extends VectorWritable, B extends VectorBase> A _subAssign(final A a, final B b) {
     final int length = a.size();
+    if (length != b.size()) throw new DimensionMismatchException();
     for (int i = 0; i < length; i++) {
-      a.set(i, b - a.get(i));
+      a.set(i, b.get(i) - a.get(i));
     }
     return a;
   }
@@ -121,6 +125,18 @@ public class Operable {
     return subAssign(a, b);
   }
 
+  // End: Sub operations for Vector + Vector
+
+  // Start: Sub operations for Vector + double
+
+  private <A extends VectorWritable> A _subAssign(final A a, final double b) {
+    final int length = a.size();
+    for (int i = 0; i < length; i++) {
+      a.set(i, b - a.get(i));
+    }
+    return a;
+  }
+
   public <A extends VectorWritable> A subAssign(final A a, final double b) {
     return addAssign(a, -b);
   }
@@ -143,6 +159,8 @@ public class Operable {
     return _subAssign(b, a);
   }
 
+  // End: Sub operations for Vector + double
+
   // Transpose operations
   public <A extends VectorBase> TransposeVector<A> t(final A a) {
     return new TransposeVector<A>(a);
@@ -153,6 +171,9 @@ public class Operable {
   }
 
   // Mul operations
+
+  // Start: Mul operations for Vector + Vector
+
   private <A extends VectorWritable, B extends VectorBase> A _mulAssign(final A a, final B b) {
     final int length = a.size();
     if (length != b.size()) throw new DimensionMismatchException();
@@ -181,36 +202,6 @@ public class Operable {
 
   public TemporalVector mul(final TemporalVector a, final TemporalVector b) {
     return mulAssign(a, b);
-  }
-
-  private <A extends VectorWritable> A _mulAssign(final A a, final double b) {
-    final int length = a.size();
-    for (int i = 0; i < length; i++) {
-      a.set(i, a.get(i) * b);
-    }
-    return a;
-  }
-
-  public <A extends VectorWritable, B extends VectorBase> A mulAssign(final A a, final double b) {
-    return _mulAssign(a, b);
-  }
-
-  public <A extends VectorBase> TemporalVector mul(final A a, final double b) {
-    final TemporalVector result = new TemporalVector(a);
-    return mulAssign(result, b);
-  }
-
-  public <B extends VectorBase> TemporalVector mul(final double a, final B b) {
-    final TemporalVector result = new TemporalVector(b);
-    return mulAssign(result, a);
-  }
-
-  public TemporalVector mul(final TemporalVector a, final double b) {
-    return mulAssign(a, b);
-  }
-
-  public TemporalVector mul(final double a, final TemporalVector b) {
-    return mulAssign(b, a);
   }
 
   private <A extends VectorBase, B extends VectorBase> double _innerProduct(final A a, final B b) {
@@ -245,7 +236,46 @@ public class Operable {
     return mul(a.base(), b.base());
   }
 
+  // End: Mul operations for Vector + Vector
+
+  // Start: Mult operations for Vector + double
+
+  private <A extends VectorWritable> A _mulAssign(final A a, final double b) {
+    final int length = a.size();
+    for (int i = 0; i < length; i++) {
+      a.set(i, a.get(i) * b);
+    }
+    return a;
+  }
+
+  public <A extends VectorWritable, B extends VectorBase> A mulAssign(final A a, final double b) {
+    return _mulAssign(a, b);
+  }
+
+  public <A extends VectorBase> TemporalVector mul(final A a, final double b) {
+    final TemporalVector result = new TemporalVector(a);
+    return mulAssign(result, b);
+  }
+
+  public <B extends VectorBase> TemporalVector mul(final double a, final B b) {
+    final TemporalVector result = new TemporalVector(b);
+    return mulAssign(result, a);
+  }
+
+  public TemporalVector mul(final TemporalVector a, final double b) {
+    return mulAssign(a, b);
+  }
+
+  public TemporalVector mul(final double a, final TemporalVector b) {
+    return mulAssign(b, a);
+  }
+
+  // End: Mult operations for Vector + double
+
   // Div operations
+
+  // Start: Div operations for Vector + Vector
+
   private <A extends VectorWritable, B extends VectorBase> A _divAssign(final A a, final B b) {
     final int length = a.size();
     if (length != b.size()) throw new DimensionMismatchException();
@@ -260,22 +290,6 @@ public class Operable {
     if (length != b.size()) throw new DimensionMismatchException();
     for (int i = 0; i < length; i++) {
       b.set(i, b.get(i) / a.get(i));
-    }
-    return b;
-  }
-
-  private <A extends VectorWritable> A _divAssign(final A a, final double b) {
-    final int length = a.size();
-    for (int i = 0; i < length; i++) {
-      a.set(i, a.get(i) / b);
-    }
-    return a;
-  }
-
-  private <B extends VectorWritable> B _divAssign(final double a, final B b) {
-    final int length = b.size();
-    for (int i = 0; i < length; i++) {
-      b.set(i, a / b.get(i));
     }
     return b;
   }
@@ -301,6 +315,26 @@ public class Operable {
     return divAssign(a, b);
   }
 
+  // End: Div operations for Vector + Vector
+
+  // Start: Div operations for Vector + double
+
+  private <A extends VectorWritable> A _divAssign(final A a, final double b) {
+    final int length = a.size();
+    for (int i = 0; i < length; i++) {
+      a.set(i, a.get(i) / b);
+    }
+    return a;
+  }
+
+  private <B extends VectorWritable> B _divAssign(final double a, final B b) {
+    final int length = b.size();
+    for (int i = 0; i < length; i++) {
+      b.set(i, a / b.get(i));
+    }
+    return b;
+  }
+
   public <A extends VectorWritable, B extends VectorBase> A divAssign(final A a, final double b) {
     return _divAssign(a, b);
   }
@@ -322,4 +356,6 @@ public class Operable {
   public TemporalVector div(final double a, final TemporalVector b) {
     return _divAssign(a, b);
   }
+
+  // End: Div operations for Vector + double
 }
