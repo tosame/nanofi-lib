@@ -19,11 +19,11 @@ import java.util.Map.Entry;
  * @author Kazuto Fukuchi
  * 
  * @param <First>
- *        First value type
+ *          First value type
  * @param <Second>
- *        Second value type
+ *          Second value type
  */
-public class Pair<First, Second> implements Entry<First, Second> {
+public  class Pair<First, Second> extends Tuple<First, Second, None, None, None, None, None, None, None, None> implements Entry<First, Second> {
   /**
    * Create Pair instance from parameters.
    * <p>
@@ -31,9 +31,9 @@ public class Pair<First, Second> implements Entry<First, Second> {
    * </p>
    * 
    * @param first
-   *        First value.
+   *          First value.
    * @param second
-   *        Second value.
+   *          Second value.
    * @return Pair instance that values is method parameters.
    */
   public static <First, Second> Pair<First, Second> create(final First first, final Second second) {
@@ -46,15 +46,16 @@ public class Pair<First, Second> implements Entry<First, Second> {
   /**
    * Construct pair object initizlied default values.
    */
-  public Pair() {}
+  public Pair() {
+  }
 
   /**
    * Construct pair object initialized from parameters.
    * 
    * @param first
-   *        First value.
+   *          First value.
    * @param second
-   *        Second value.
+   *          Second value.
    */
   public Pair(final First first, final Second second) {
     this.first = first;
@@ -69,16 +70,18 @@ public class Pair<First, Second> implements Entry<First, Second> {
   public First first() {
     return first;
   }
+
   /**
    * Setter for first value.
    * 
    * @param value
-   *        First value.
+   *          First value.
    * @return First value. It's same as parameter value.
    */
   public First first(final First value) {
     return this.first = value;
   }
+
   /**
    * Getter for second value.
    * 
@@ -87,11 +90,12 @@ public class Pair<First, Second> implements Entry<First, Second> {
   public Second second() {
     return second;
   }
+
   /**
    * Setter for second value.
    * 
    * @param value
-   *        Second value.
+   *          Second value.
    * @return Second value. It's same as parameter value.
    */
   public Second second(final Second value) {
@@ -107,6 +111,7 @@ public class Pair<First, Second> implements Entry<First, Second> {
   public First getKey() {
     return first;
   }
+
   /*
    * (non-Javadoc)
    * 
@@ -116,6 +121,7 @@ public class Pair<First, Second> implements Entry<First, Second> {
   public Second getValue() {
     return second;
   }
+
   /*
    * (non-Javadoc)
    * 

@@ -9,10 +9,6 @@ import org.junit.runner.RunWith;
 @RunWith(Enclosed.class)
 public class OperableTest {
 
-  public static class BasicArithmetic {
-   private final BasicArithmeticOperate op = new BasicArithmeticOperate();
-
-    public class BasicArithmeticOperate extends Operable {
-    }
+  public static class BasicArithmetic extends Operable {
   }
 }
