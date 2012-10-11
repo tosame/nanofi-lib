@@ -19,6 +19,19 @@ public class Operable {
     }
   }
 
+  // creational method
+  public Vector vector(double... values) {
+    return new Vector(values);
+  }
+
+  public double[] row(double... values) {
+    return values;
+  }
+
+  public Matrix matrix(double[]... values) {
+    return new Matrix(values);
+  }
+
   // Basic arithmetic operation
   // Add operations
 
@@ -358,6 +371,14 @@ public class Operable {
     return a.base();
   }
 
+  public <A extends MatrixBase> TransposeMatrix<A> t(final A a) {
+    return new TransposeMatrix<A>(a);
+  }
+
+  public <A extends MatrixBase> A t(final TransposeMatrix<A> a) {
+    return a.base();
+  }
+
   // Mul operations
 
   // Start: Mul operations for Vector + Vector
@@ -426,7 +447,7 @@ public class Operable {
 
   // End: Mul operations for Vector + Vector
 
-  // Start: Mult operations for Vector + double
+  // Start: Mul operations for Vector + double
 
   private <A extends VectorWritable> A _mulAssign(final A a, final double b) {
     final int length = a.size();
@@ -459,6 +480,111 @@ public class Operable {
   }
 
   // End: Mult operations for Vector + double
+
+  // Start: Mul operations for Matrix + Matrix
+
+  private <A extends MatrixBase, B extends MatrixBase> TemporalMatrix _mul(final A a, final B b) {
+    final int size = a.columns();
+    if (size != b.rows()) new DimensionMismatchException();
+    final int rows = a.rows();
+    final int columns = b.columns();
+    TemporalMatrix result = new TemporalMatrix(rows, columns);
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        double r = 0.0;
+        for (int k = 0; k < size; k++) {
+          r += a.get(i, k) * b.get(k, j);
+        }
+        result.set(i, j, r);
+      }
+    }
+    return result;
+  }
+
+  public <A extends MatrixBase, B extends MatrixBase> TemporalMatrix mul(final A a, final B b) {
+    return _mul(a, b);
+  }
+
+  // End: Mul operations for Matrix + Matrix
+
+  // Start: Mul operations for Matrix + Vector
+
+  private <A extends MatrixBase, B extends VectorBase> TemporalVector _mul(final A a, final B b) {
+    final int columns = a.columns();
+    if (columns != b.size()) throw new DimensionMismatchException();
+    final int rows = a.rows();
+    final TemporalVector result = new TemporalVector(rows);
+    for (int i = 0; i < rows; i++) {
+      double r = 0.0;
+      for (int j = 0; j < columns; j++) {
+        r += a.get(i, j) * b.get(j);
+      }
+      result.set(i, r);
+    }
+    return result;
+  }
+
+  private <A extends VectorBase, B extends MatrixBase> TemporalVector _mul(final A a, final B b) {
+    final int rows = b.rows();
+    if (rows != a.size()) throw new DimensionMismatchException();
+    final int columns = b.columns();
+    final TemporalVector result = new TemporalVector(columns);
+    for (int i = 0; i < columns; i++) {
+      double r = 0.0;
+      for (int j = 0; j < rows; j++) {
+        r += a.get(j) * b.get(j, i);
+      }
+      result.set(i, r);
+    }
+    return result;
+  }
+
+  public <A extends MatrixBase, B extends VectorBase> TemporalVector mul(final A a, final B b) {
+    return _mul(a, b);
+  }
+
+  public <A extends VectorBase, B extends MatrixBase> TemporalVector mul(final A a, final B b) {
+    return _mul(a, b);
+  }
+
+  // End: Mult operations for Matrix + Vector
+
+  // Start: Mul operations for Matrix + double
+
+  private <A extends MatrixWritable> A _mulAssign(final A a, final double b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        a.set(i, j, a.get(i, j) * b);
+      }
+    }
+    return a;
+  }
+
+  public <A extends MatrixWritable> A mulAssign(final A a, final double b) {
+    return _mulAssign(a, b);
+  }
+
+  public <A extends MatrixBase> TemporalMatrix mul(final A a, final double b) {
+    final TemporalMatrix result = new TemporalMatrix(a);
+    return mulAssign(result, b);
+  }
+
+  public <B extends MatrixBase> TemporalMatrix mul(final double a, final B b) {
+    final TemporalMatrix result = new TemporalMatrix(b);
+    return mulAssign(result, a);
+  }
+
+  public TemporalMatrix mul(final TemporalMatrix a, final double b) {
+    return mulAssign(a, b);
+  }
+
+  public TemporalMatrix mul(final double a, final TemporalMatrix b) {
+    return mulAssign(b, a);
+  }
+
+  // End: Mul operations for Matrix + double
 
   // Div operations
 
@@ -523,7 +649,7 @@ public class Operable {
     return b;
   }
 
-  public <A extends VectorWritable, B extends VectorBase> A divAssign(final A a, final double b) {
+  public <A extends VectorWritable> A divAssign(final A a, final double b) {
     return _divAssign(a, b);
   }
 
@@ -534,7 +660,7 @@ public class Operable {
 
   public <B extends VectorBase> TemporalVector div(final double a, final B b) {
     final TemporalVector result = new TemporalVector(b);
-    return divAssign(result, a);
+    return _divAssign(a, result);
   }
 
   public TemporalVector div(final TemporalVector a, final double b) {
@@ -546,4 +672,138 @@ public class Operable {
   }
 
   // End: Div operations for Vector + double
+
+  // Start: Div operations for Matrix + Matrix
+
+  private <A extends MatrixWritable, B extends MatrixBase> A _divAssign(final A a, final B b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    if (rows != b.rows() && columns != b.columns()) new DimensionMismatchException();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        a.set(i, j, a.get(i, j) / b.get(i, j));
+      }
+    }
+    return a;
+  }
+
+  private <A extends MatrixBase, B extends MatrixWritable> B _divAssign(final A a, final B b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    if (rows != b.rows() && columns != b.columns()) new DimensionMismatchException();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        b.set(i, j, b.get(i, j) / a.get(i, j));
+      }
+    }
+    return b;
+  }
+
+  public <A extends MatrixWritable, B extends MatrixBase> A divAssign(final A a, final B b) {
+    return _divAssign(a, b);
+  }
+
+  public <A extends MatrixBase, B extends MatrixBase> TemporalMatrix div(final A a, final B b) {
+    final TemporalMatrix result = new TemporalMatrix(a);
+    return divAssign(result, b);
+  }
+
+  public <B extends MatrixBase> TemporalMatrix div(final TemporalMatrix a, final B b) {
+    return divAssign(a, b);
+  }
+
+  public <A extends MatrixBase> TemporalMatrix div(final A a, final TemporalMatrix b) {
+    return _divAssign(a, b);
+  }
+
+  public TemporalMatrix div(final TemporalMatrix a, final TemporalMatrix b) {
+    return divAssign(a, b);
+  }
+
+  // End: Div operations for Matrix + Matrix
+
+  // Start: Hadamard operations for Matrix + double
+
+  private <A extends MatrixWritable, B extends MatrixBase> A _hadamardAssign(final A a, final B b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    if (rows != b.rows() || columns != b.columns()) throw new DimensionMismatchException();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        a.set(i, j, a.get(i, j) * b.get(i, j));
+      }
+    }
+    return a;
+  }
+
+  public <A extends MatrixWritable, B extends MatrixBase> A hadamardAssign(final A a, final B b) {
+    return _hadamardAssign(a, b);
+  }
+
+  public <A extends MatrixBase, B extends MatrixBase> TemporalMatrix hadamard(final A a, final B b) {
+    final TemporalMatrix result = new TemporalMatrix(a);
+    return hadamardAssign(result, b);
+  }
+
+  public <B extends MatrixBase> TemporalMatrix hadamard(final TemporalMatrix a, final B b) {
+    return hadamardAssign(a, b);
+  }
+
+  public <A extends MatrixBase> TemporalMatrix hadamard(final A a, final TemporalMatrix b) {
+    return hadamardAssign(b, a);
+  }
+
+  public TemporalMatrix hadamard(final TemporalMatrix a, final TemporalMatrix b) {
+    return hadamardAssign(b, a);
+  }
+
+  // End: Add operations for Matrix + double
+
+  // Start: Div operations for Matrix + double
+
+  private <A extends MatrixWritable> A _divAssign(final A a, final double b) {
+    final int rows = a.rows();
+    final int columns = a.columns();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        a.set(i, j, a.get(i, j) / b);
+      }
+    }
+    return a;
+  }
+
+  private <B extends MatrixWritable> B _divAssign(final double a, final B b) {
+    final int rows = b.rows();
+    final int columns = b.columns();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        b.set(i, j, b.get(i, j) / a);
+      }
+    }
+    return b;
+  }
+
+  public <A extends MatrixWritable> A divAssign(final A a, final double b) {
+    return _divAssign(a, b);
+  }
+
+  public <A extends MatrixBase> TemporalMatrix div(final A a, final double b) {
+    final TemporalMatrix result = new TemporalMatrix(a);
+    return divAssign(result, b);
+  }
+
+  public <B extends MatrixBase> TemporalMatrix div(final double a, final B b) {
+    final TemporalMatrix result = new TemporalMatrix(b);
+    return divAssign(result, a);
+  }
+
+  public TemporalMatrix div(final TemporalMatrix a, final double b) {
+    return divAssign(a, b);
+  }
+
+  public TemporalMatrix div(final double a, final TemporalMatrix b) {
+    return _divAssign(a, b);
+  }
+
+  // End: Div operations for Matrix + double
 }
