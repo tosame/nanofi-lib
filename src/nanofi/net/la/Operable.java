@@ -440,6 +440,9 @@ public class Operable {
   public <A extends VectorBase, B extends VectorBase> double mul(final TransposeVector<A> a, final B b) {
     return _innerProduct(a.base(), b);
   }
+  public <A extends VectorBase> double mul(final TransposeVector<A> a, final TemporalVector b) {
+    return _innerProduct(a.base(), b);
+  }
 
   private <A extends VectorBase, B extends VectorBase> TemporalMatrix _outerProduct(final A a, final B b) {
     final TemporalMatrix result = new TemporalMatrix(a.size(), b.size());
@@ -452,6 +455,9 @@ public class Operable {
   }
 
   public <A extends VectorBase, B extends VectorBase> TemporalMatrix mul(final A a, final TransposeVector<B> b) {
+    return _outerProduct(a, b.base());
+  }
+  public <B extends VectorBase> TemporalMatrix mul(final TemporalVector a, final TransposeVector<B> b) {
     return _outerProduct(a, b.base());
   }
 

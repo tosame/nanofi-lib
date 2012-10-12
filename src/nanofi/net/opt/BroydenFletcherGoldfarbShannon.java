@@ -12,35 +12,50 @@ public class BroydenFletcherGoldfarbShannon extends Operable implements Reiterab
   private GradableFunction objective;
 
   private Vector solution;
-  private Vector diffGradient;
+  private Vector gradient;
   private Matrix hesseInvert;
 
   public final VectorWritable solution() {
     return solution;
   }
+
   public final MatrixBase hesseInvert() {
     return hesseInvert;
   }
-  public final VectorBase diffGradient() {
-    return diffGradient;
+
+  public final VectorBase gradient() {
+    return gradient;
   }
 
   public BroydenFletcherGoldfarbShannon(GradableFunction objective, int size) {
     this(objective, new ZeroVector(size), null);
   }
+
   public BroydenFletcherGoldfarbShannon(GradableFunction objective, VectorBase init) {
     this(objective, init, null);
   }
+
   public BroydenFletcherGoldfarbShannon(GradableFunction objective, VectorBase init, MatrixBase hesseInvert) {
+    this.objective = objective;
     solution = vector(init);
     this.hesseInvert = hesseInvert == null ? matrix(identity(solution.size())) : matrix(hesseInvert);
+    gradient = vector(objective.gradient(solution));
   }
 
   @Override
   public void reiterate() {
-    if(diffGradient == null){
-      diffGradient = vector(objective.gradient(solution));
-    }
-  }
+    final Vector sk = mul(hesseInvert, gradient);
+    double alpha = 0.1;
+    mulAssign(sk, -alpha);
 
+    addAssign(solution, sk);
+
+    final Vector gk = gradient;
+    gradient = vector(objective.gradient(solution));
+    final Vector yk = sub(gradient, gk);
+    final double divide = mul(t(yk), sk);
+    if (Math.abs(divide) < 1.0e-10) return;
+    final MatrixBase sy = div(mul(sk, t(yk)), divide);
+    hesseInvert = add(mul(sub(identity(solution.size()), sy), mul(hesseInvert, sub(identity(solution.size()), t(sy)))), div(mul(sk, t(sk)), divide));
+  }
 }
