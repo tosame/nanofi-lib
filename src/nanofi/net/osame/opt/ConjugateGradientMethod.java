@@ -62,35 +62,68 @@ public class ConjugateGradientMethod extends Operable implements FunctionOptimiz
 	
 	
 	@Override
-	public List<? extends VectorBase> optimize(Gradient function, VectorBase initialVector) {
-		if (function.getDimension() != initialVector.size()) {
+	public VectorBase optimize(Gradient function, VectorBase initialParameter) {
+		if (function.getDimension() != initialParameter.size()) {
 			throw new DimensionMismatchException();
 		}
 		
-		VectorBase vector = initialVector;
-		List<VectorBase> vectors = new ArrayList<>();
-		vectors.add(vector);
+		VectorBase parameter = initialParameter;
 		
 		int t = 0;
-		VectorBase gradient = function.gradient(vector);
-		double gradientNorm = Math.sqrt(mul(t(gradient), gradient));
 		VectorBase previousGradient = null;
-		Vector searchDirection = assign(mul(-1d, gradient), Vector.class);
-		while (!condition.converged(t, gradientNorm)) {
+		double previousValue = Double.MAX_VALUE;
+		double currentValue = function.functionValue(parameter);
+		while (!condition.converged(t, previousValue - currentValue)) {
 			t ++;
-			double stepSize = lineSearch.searchStepSize(function, vector, searchDirection);
-			vector = assign(add(vector, mul(stepSize, searchDirection)), Vector.class);
-			vectors.add(vector);
+			VectorBase gradient = function.gradient(parameter);
+			
+			parameter = updateParameter(parameter, gradient, previousGradient, function);
 			
 			previousGradient = gradient;
-			gradient = function.gradient(vector);
-			double beta = decideBeta(gradient, previousGradient);
-			searchDirection = assign(add(mul(-1d, gradient), mul(beta, searchDirection)), Vector.class);
-			gradientNorm = Math.sqrt(mul(t(gradient), gradient));
+			previousValue = currentValue;
+			currentValue = function.functionValue(parameter);
 		}
-		
-		return vectors;
+		return parameter;
 	}
 
-	
+	@Override
+	public List<? extends VectorBase> optimizeForDebug(Gradient function, VectorBase initialParameter) {
+		if (function.getDimension() != initialParameter.size()) {
+			throw new DimensionMismatchException();
+		}
+		
+		VectorBase parameter = initialParameter;
+		List<VectorBase> parameters = new ArrayList<>();
+		parameters.add(parameter);
+		
+		int t = 0;
+		VectorBase previousGradient = null;
+		double previousValue = Double.MAX_VALUE;
+		double currentValue = function.functionValue(parameter);
+		while (!condition.converged(t, previousValue - currentValue)) {
+			t ++;
+			
+			VectorBase gradient = function.gradient(parameter);
+			
+			parameter = updateParameter(parameter, gradient, previousGradient, function);
+			parameters.add(parameter);
+			
+			previousGradient = gradient;
+			previousValue = currentValue;
+			currentValue = function.functionValue(parameter);
+		}
+		
+		return parameters;
+	}
+
+	private VectorBase updateParameter(VectorBase currentParameter, 
+			VectorBase currentGradient, VectorBase previousGradient, Gradient function) {
+		VectorBase searchDirection = mul(-1d, currentGradient);
+		if (previousGradient != null) {
+			double beta = decideBeta(currentGradient, previousGradient);
+			searchDirection = add(searchDirection, mul(beta, searchDirection));
+		}
+		double stepSize = lineSearch.searchStepSize(function, currentParameter, searchDirection);
+		return assign(add(currentParameter, mul(stepSize, searchDirection)), Vector.class);
+	}
 }

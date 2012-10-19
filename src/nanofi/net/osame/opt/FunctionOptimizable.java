@@ -16,10 +16,18 @@ public interface FunctionOptimizable {
 	/**
 	 * 
 	 * @param function
-	 * @param initialVector
+	 * @param initialParameter
 	 * @return
 	 * @throws DimensionMismatchException
 	 */
-	public List<? extends VectorBase> optimize(Gradient function, VectorBase initialVector);
+	public VectorBase optimize(Gradient function, VectorBase initialParameter);
 	
+	/**
+	 * 
+	 * @param function
+	 * @param initialParameter
+	 * @return
+	 * @throws DimensionMismatchException
+	 */
+	public List<? extends VectorBase> optimizeForDebug(Gradient function, VectorBase initialParameter);
 }

@@ -34,68 +34,117 @@ public class QuasiNewtonMethod extends Operable implements FunctionOptimizable {
 
 
 	@Override
-	public List<? extends VectorBase> optimize(Gradient function, VectorBase initialVector) {
+	public VectorBase optimize(Gradient function, VectorBase initialParameter) {
 		
 		int dimension = function.getDimension();
 		MatrixBase coefficientMatrix = generateUnitMatrix(dimension);
-		VectorBase vector = initialVector;
-		VectorBase gradient = function.gradient(vector);
+		VectorBase parameter = initialParameter;
+		VectorBase gradient = function.gradient(parameter);
 		
 		VectorBase previousVector = null;
 		VectorBase previousGradient = null;
 		
-		List<VectorBase> vectors = new ArrayList<>();
-		vectors.add(vector);
-		
 		int t = 0;
+		double previousValue = Double.MAX_VALUE;
+		double currentValue = function.functionValue(parameter);
 		while (true) {
 			t ++;
-			// decide search direction
-			Vector searchDirection = assign(mul(-1, mul(coefficientMatrix, gradient)), Vector.class);
-			double stepSize = lineSearch.searchStepSize(function, vector, searchDirection);
 			
 			// update vectors
-			previousVector = vector;
+			previousVector = parameter;
 			previousGradient = gradient;
-			vector = assign(add(vector, mul(stepSize, searchDirection)), Vector.class);
-			vectors.add(vector);
-			gradient = function.gradient(vector);
+			parameter = updateParameter(parameter, coefficientMatrix, gradient, function);
+			gradient = function.gradient(parameter);
+			
+			previousValue = currentValue;
+			currentValue = function.functionValue(parameter);
 			
 			// convergent check
-			if (condition.converged(t, Math.sqrt(mul(t(gradient), gradient)))) {
+			if (condition.converged(t, previousValue - currentValue)) {
 				// convergent
 				break;
 			}
 			
 			// make difference vectors
-			Vector vectorDifference = assign(sub(vector, previousVector), Vector.class);
-			Vector gradientDifference = assign(sub(gradient, previousGradient), Vector.class);
-			
-			if (isZeroVector(vectorDifference) || isZeroVector(gradientDifference)) {
+			Vector sk = assign(sub(parameter, previousVector), Vector.class);
+			Vector yk = assign(sub(gradient, previousGradient), Vector.class);
+			if (isZeroVector(sk) || isZeroVector(yk)) {
 				break;
 			}
 			
 			// update coefficient matrix
-			// sk:vector difference , yk : gradient difference
-			Matrix tmp1 = assign(
-					div(
-							add(mul(coefficientMatrix, mul(gradientDifference, t(vectorDifference))), 
-									mul(vectorDifference, t(mul(coefficientMatrix, gradientDifference)))), 
-							mul(t(vectorDifference), gradientDifference)), Matrix.class);
-			
-			// mul(TransposeVecotr<Vector>, TemporalVector)があいまいらしい
-//			mul(t(gradientDifference), mul(coefficientMatrix, gradientDifference));
-			double tmp2 = 1.0 + 
-					mul(t(mul(coefficientMatrix, gradientDifference)), gradientDifference) / 
-					mul(t(vectorDifference), gradientDifference);
-			Matrix tmp3 = assign(
-					mul(mul(vectorDifference, t(vectorDifference)) , tmp2 / mul(t(vectorDifference), gradientDifference)), 
-					Matrix.class);
-			
-			coefficientMatrix = assign(sub(coefficientMatrix, add(tmp1, tmp3)), Matrix.class);
+			coefficientMatrix = updateCoefficientMatrix(coefficientMatrix, sk, yk);
 		}
 		
-		return vectors;
+		return parameter;
+	}
+	
+	@Override
+	public List<? extends VectorBase> optimizeForDebug(Gradient function, VectorBase initialParameter) {
+		int dimension = function.getDimension();
+		MatrixBase coefficientMatrix = generateUnitMatrix(dimension);
+		VectorBase parameter = initialParameter;
+		VectorBase gradient = function.gradient(parameter);
+		
+		VectorBase previousVector = null;
+		VectorBase previousGradient = null;
+		
+		List<VectorBase> parameters = new ArrayList<>();
+		parameters.add(parameter);
+		
+		int t = 0;
+		double previousValue = Double.MAX_VALUE;
+		double currentValue = function.functionValue(parameter);
+		while (true) {
+			t ++;
+			
+			// update vectors
+			previousVector = parameter;
+			previousGradient = gradient;
+			parameter = updateParameter(parameter, coefficientMatrix, gradient, function);
+			parameters.add(parameter);
+			gradient = function.gradient(parameter);
+			
+			previousValue = currentValue;
+			currentValue = function.functionValue(parameter);
+			
+			// convergent check
+			if (condition.converged(t, previousValue - currentValue)) {
+				// convergent
+				break;
+			}
+			
+			// make difference vectors
+			Vector sk = assign(sub(parameter, previousVector), Vector.class);
+			Vector yk = assign(sub(gradient, previousGradient), Vector.class);
+			if (isZeroVector(sk) || isZeroVector(yk)) {
+				break;
+			}
+			
+			// update coefficient matrix
+			coefficientMatrix = updateCoefficientMatrix(coefficientMatrix, sk, yk);
+		}
+		
+		return parameters;
+	}
+
+
+	private Vector updateParameter(VectorBase currentParameter, MatrixBase coefficientMatrix, 
+			VectorBase gradient, Gradient function) {
+		Vector searchDirection = mul(-1, mul(coefficientMatrix, gradient));
+		double stepSize = lineSearch.searchStepSize(function, currentParameter, searchDirection);
+		return assign(add(currentParameter, mul(stepSize, searchDirection)), Vector.class);
+	}
+	
+	private Matrix updateCoefficientMatrix(MatrixBase currentMatrix, VectorBase sk, VectorBase yk) {
+		double inner = mul(t(sk), yk);
+		Matrix tmp1 = div(add(mul(currentMatrix, mul(yk, t(sk))), 
+						mul(sk, t(mul(currentMatrix, yk)))), inner);
+		
+		double tmp2 = 1.0 + mul(t(yk), mul(currentMatrix, yk)) / inner; 
+		Matrix tmp3 = mul(mul(sk, t(sk)) , tmp2 / inner);
+
+		return assign(sub(currentMatrix, add(tmp1, tmp3)), Matrix.class);
 	}
 
 	private boolean isZeroVector(VectorBase vector) {
