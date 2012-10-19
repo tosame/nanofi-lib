@@ -47,14 +47,14 @@ public class ArmijoLineSearch extends Operable implements LineSearch {
 	
 	
 	@Override
-	public double searchStepSize(Gradient function, VectorBase vector, VectorBase searchDirection) {
+	public double searchStepSize(Gradient function, VectorBase parameter, VectorBase searchDirection) {
 		
-		VectorBase gradientVector = function.gradient(vector);
-		double functionValue = function.functionValue(vector);
+		VectorBase gradientVector = function.gradient(parameter);
+		double functionValue = function.functionValue(parameter);
 		double innerValue = mul(t(gradientVector), searchDirection);
 		double beta = 1d;
 		
-		while ((functionValue + xi * beta * innerValue) < function.functionValue(add(vector, mul(beta, searchDirection)))) {
+		while ((functionValue + xi * beta * innerValue) < function.functionValue(add(parameter, mul(beta, searchDirection)))) {
 			beta *= tau;
 		}
 		
